@@ -1,0 +1,9 @@
+experiment_name: "demo-w7"
+tracking_uri: null            # set to "http://127.0.0.1:8081" if using mlflow server
+test_size: 0.2
+random_state: 42
+model:
+  C: 1.0
+  max_iter: 200
+  penalty: "l2"
+  solver: "lbfgs"

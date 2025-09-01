@@ -1,0 +1,7 @@
+# Promotion policy (simple, explicit)
+primary_metric: "auc"
+# Allowed negative delta vs current Prod (e.g., 0.00 means no regression allowed)
+allowed_regression: 0.01
+# If there's no current Production, allow first promotion
+allow_first_promotion: true
+

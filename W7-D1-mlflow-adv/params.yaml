@@ -1,0 +1,5 @@
+experiment_name: "W7D1-mlflow-adv"
+registered_model_name: "w7d1_cancer_classifier"
+random_state: 42
+test_size: 0.2
+

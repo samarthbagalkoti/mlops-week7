@@ -1,0 +1,15 @@
+artifact_uri: file:///root/mlops-preparation/mlops-week7/W7-D1-mlflow-adv/mlruns/927807688512393747/897e479ee4f34d22b2124715821e8744/artifacts
+end_time: 1756712247354
+entry_point_name: ''
+experiment_id: '927807688512393747'
+lifecycle_stage: active
+run_id: 897e479ee4f34d22b2124715821e8744
+run_name: fearless-gnat-665
+run_uuid: 897e479ee4f34d22b2124715821e8744
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1756712244060
+status: 3
+tags: []
+user_id: root

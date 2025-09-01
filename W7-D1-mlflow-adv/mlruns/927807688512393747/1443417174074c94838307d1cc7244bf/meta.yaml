@@ -1,0 +1,15 @@
+artifact_uri: file:///root/mlops-preparation/mlops-week7/W7-D1-mlflow-adv/mlruns/927807688512393747/1443417174074c94838307d1cc7244bf/artifacts
+end_time: 1756711669201
+entry_point_name: ''
+experiment_id: '927807688512393747'
+lifecycle_stage: active
+run_id: 1443417174074c94838307d1cc7244bf
+run_name: intelligent-newt-195
+run_uuid: 1443417174074c94838307d1cc7244bf
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1756711665765
+status: 3
+tags: []
+user_id: root

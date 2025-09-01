@@ -1,0 +1,26 @@
+# ==== Core MLflow stack (Tracking + Registry) ====
+mlflow==3.3.2
+sqlalchemy==2.0.32
+alembic==1.13.2
+protobuf==4.25.3
+
+# Keep pkg_resources available for MLflow (avoid upcoming removal)
+setuptools>=69,<81
+wheel>=0.43
+
+# ==== Data / Modeling (Py3.12 compatible, <2.0 NumPy) ====
+numpy==1.26.4
+scipy==1.13.1
+pandas==2.2.2
+scikit-learn==1.5.2
+cloudpickle==3.0.0
+pyyaml==6.0.2
+packaging==24.1
+requests==2.32.3
+
+# ==== Optional: S3 artifact store (uncomment if you switch from local artifacts)
+# boto3==1.34.162
+
+# ==== Optional: Postgres backend (uncomment if you use Postgres)
+# psycopg2-binary==2.9.9
+
