@@ -1,0 +1,97 @@
+name: W7 Gate (MLflow Registry)
+
+on:
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - "src/**"
+      - "policy.yaml"
+      - "params.yaml"
+      - "requirements.txt"
+      - "Makefile"
+  workflow_dispatch: {}
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    concurrency:
+      group: mlflow-gate-${{ github.ref }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-py311-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            pip-${{ runner.os }}-py311-
+
+      - name: Install deps
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Start MLflow server (background)
+        shell: bash
+        run: |
+          . .venv/bin/activate
+          mkdir -p artifacts
+          # bind to localhost; store SQLite & artifacts in workspace
+          nohup mlflow server \
+            --backend-store-uri sqlite:///mlflow.db \
+            --artifacts-destination ./artifacts \
+            --host 0.0.0.0 --port 8081 \
+            > mlflow.log 2>&1 &
+
+          # Wait for server to accept connections
+          for i in {1..20}; do
+            curl -fsS http://54.147.138.39:8081/ || true
+            if [ $? -eq 0 ]; then echo "MLflow is up"; break; fi
+            sleep 1
+          done
+
+          echo "MLFLOW_TRACKING_URI=http://54.147.138.39:8081" >> $GITHUB_ENV
+
+      - name: Train v1 (baseline) and promote to Production
+        run: |
+          . .venv/bin/activate
+          make train_v1
+          # Promote v1 → Production (no dry-run so we actually set a Prod)
+          make promote VERSION=1 STAGE=Production DRY=false
+
+      - name: Train v2 (candidate)
+        run: |
+          . .venv/bin/activate
+          make train_v2
+
+      - name: Run gate on candidate (v2)
+        run: |
+          . .venv/bin/activate
+          set -e
+          make list
+          # Gate MUST pass; if it fails → PR fails
+          make gate VERSION=2
+
+      - name: Upload MLflow & audit artifacts (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: w7d2-mlflow-artifacts
+          path: |
+            mlflow.log
+            mlflow.db
+            artifacts/
+            logs/audit.jsonl
+          if-no-files-found: warn
