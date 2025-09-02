@@ -4,11 +4,7 @@ on:
   pull_request:
     branches: [ main, master ]
     paths:
-      - "src/**"
-      - "policy.yaml"
-      - "params.yaml"
-      - "requirements.txt"
-      - "Makefile"
+      - "W7-D1-mlflow-adv/**"
   workflow_dispatch: {}
 
 jobs:
@@ -18,6 +14,10 @@ jobs:
     concurrency:
       group: mlflow-gate-${{ github.ref }}
       cancel-in-progress: false
+
+    defaults:
+      run:
+        working-directory: W7-D1-mlflow-adv
 
     steps:
       - name: Checkout
@@ -32,7 +32,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: pip-${{ runner.os }}-py311-${{ hashFiles('requirements.txt') }}
+          key: pip-${{ runner.os }}-py311-${{ hashFiles('W7-D1-mlflow-adv/requirements.txt') }}
           restore-keys: |
             pip-${{ runner.os }}-py311-
 
@@ -48,14 +48,12 @@ jobs:
         run: |
           . .venv/bin/activate
           mkdir -p artifacts
-          # bind to localhost; store SQLite & artifacts in workspace
           nohup mlflow server \
             --backend-store-uri sqlite:///mlflow.db \
             --artifacts-destination ./artifacts \
             --host 0.0.0.0 --port 8081 \
             > mlflow.log 2>&1 &
 
-          # Wait for server to accept connections
           for i in {1..20}; do
             curl -fsS http://54.147.138.39:8081/ || true
             if [ $? -eq 0 ]; then echo "MLflow is up"; break; fi
@@ -68,7 +66,6 @@ jobs:
         run: |
           . .venv/bin/activate
           make train_v1
-          # Promote v1 → Production (no dry-run so we actually set a Prod)
           make promote VERSION=1 STAGE=Production DRY=false
 
       - name: Train v2 (candidate)
@@ -81,7 +78,6 @@ jobs:
           . .venv/bin/activate
           set -e
           make list
-          # Gate MUST pass; if it fails → PR fails
           make gate VERSION=2
 
       - name: Upload MLflow & audit artifacts (always)
@@ -90,8 +86,8 @@ jobs:
         with:
           name: w7d2-mlflow-artifacts
           path: |
-            mlflow.log
-            mlflow.db
-            artifacts/
-            logs/audit.jsonl
+            W7-D1-mlflow-adv/mlflow.log
+            W7-D1-mlflow-adv/mlflow.db
+            W7-D1-mlflow-adv/artifacts/
+            W7-D1-mlflow-adv/logs/audit.jsonl
           if-no-files-found: warn
