@@ -47,23 +47,42 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Configure & verify MLflow endpoint
+      - name: Start MLflow (local, background) and wait
+        shell: bash
         run: |
-          set -euo pipefail
+          set -euxo pipefail
+          . .venv/bin/activate
 
-          MLFLOW_TRACKING_URI="http://54.147.138.39:8081"
-          echo "MLFLOW_TRACKING_URI=$MLFLOW_TRACKING_URI" >> "$GITHUB_ENV"
+          # Confirm mlflow is installed
+          python -c "import mlflow; print('MLflow', mlflow.__version__)"
 
-          echo "Waiting for MLflow at $MLFLOW_TRACKING_URI/ ..."
-          for i in {1..30}; do
-            if curl -fsS "$MLFLOW_TRACKING_URI/" >/dev/null; then
-              echo "MLflow reachable"
-              exit 0
+          mkdir -p artifacts
+
+          # Start MLflow bound to localhost only
+          nohup mlflow server \
+            --backend-store-uri sqlite:///mlflow.db \
+            --artifacts-destination file:./artifacts \
+            --host 127.0.0.1 --port 8081 \
+            > mlflow.log 2>&1 &
+
+          # Wait up to ~60s for server
+          for i in {1..60}; do
+            if curl -fsS http://127.0.0.1:8081/ >/dev/null; then
+              echo "MLflow is up"
+              break
             fi
-            sleep 2
+            sleep 1
           done
-          echo "::error::MLflow is not reachable at $MLFLOW_TRACKING_URI"
-          exit 1
+
+          # If not up, dump logs and fail
+          if ! curl -fsS http://127.0.0.1:8081/ >/dev/null; then
+            echo "MLflow failed to start. Recent log:" || true
+            tail -n 200 mlflow.log || true
+            exit 1
+          fi
+
+          # Use local MLflow for the rest of the job
+          echo "MLFLOW_TRACKING_URI=http://127.0.0.1:8081" >> "$GITHUB_ENV"
 
       - name: Train v1 (baseline) and promote to Production
         run: |
