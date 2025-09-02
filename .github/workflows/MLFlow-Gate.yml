@@ -47,51 +47,23 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Point training to your PUBLIC MLflow (EC2/EKS). No local server in CI.
       - name: Configure & verify MLflow endpoint
-        env:
-          MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
-          MLFLOW_TRACKING_USERNAME: ${{ secrets.MLFLOW_USERNAME }}
-          MLFLOW_TRACKING_PASSWORD: ${{ secrets.MLFLOW_PASSWORD }}
         run: |
           set -euo pipefail
 
-          # Require URI
-          if [ -z "${MLFLOW_TRACKING_URI:-}" ]; then
-            echo "Missing secret MLFLOW_TRACKING_URI"; exit 1
-          fi
+          MLFLOW_TRACKING_URI="http://54.147.138.39:8081"
+          echo "MLFLOW_TRACKING_URI=$MLFLOW_TRACKING_URI" >> "$GITHUB_ENV"
 
-          echo "MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI}" >> "$GITHUB_ENV"
-          if [ -n "${MLFLOW_TRACKING_USERNAME:-}" ]; then
-            echo "MLFLOW_TRACKING_USERNAME=${MLFLOW_TRACKING_USERNAME}" >> "$GITHUB_ENV"
-            echo "MLFLOW_TRACKING_PASSWORD=${MLFLOW_TRACKING_PASSWORD}" >> "$GITHUB_ENV"
-          fi
-
-          # Verify reachability (with optional basic auth)
-          if [ -n "${MLFLOW_TRACKING_USERNAME:-}" ]; then
-            AUTH=(-u "${MLFLOW_TRACKING_USERNAME}:${MLFLOW_TRACKING_PASSWORD}")
-          else
-            AUTH=()
-          fi
-
-          echo "Waiting for MLflow at ${MLFLOW_TRACKING_URI}/ ..."
+          echo "Waiting for MLflow at $MLFLOW_TRACKING_URI/ ..."
           for i in {1..30}; do
-            if curl -fsS "${AUTH[@]}" "${MLFLOW_TRACKING_URI}/" >/dev/null; then
+            if curl -fsS "$MLFLOW_TRACKING_URI/" >/dev/null; then
               echo "MLflow reachable"
               exit 0
             fi
             sleep 2
           done
-          echo "::error::MLflow is not reachable at ${MLFLOW_TRACKING_URI}"
+          echo "::error::MLflow is not reachable at $MLFLOW_TRACKING_URI"
           exit 1
-
-      - name: Show versions (sanity)
-        run: |
-          . .venv/bin/activate
-          python -V
-          pip show mlflow || true
-          which python
-          echo "Using MLFLOW_TRACKING_URI=$MLFLOW_TRACKING_URI"
 
       - name: Train v1 (baseline) and promote to Production
         run: |
@@ -117,9 +89,8 @@ jobs:
         with:
           name: w7d2-mlflow-artifacts
           path: |
-            W7-D1-mlflow-adv/logs/**/*.jsonl
-            W7-D1-mlflow-adv/logs/**/*.log
-            W7-D1-mlflow-adv/metrics/**/*.json
-            W7-D1-mlflow-adv/reports/**/*.html
+            W7-D1-mlflow-adv/mlflow.log
+            W7-D1-mlflow-adv/mlflow.db
             W7-D1-mlflow-adv/artifacts/**
+            W7-D1-mlflow-adv/logs/**
           if-no-files-found: warn
