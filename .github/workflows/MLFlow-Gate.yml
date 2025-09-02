@@ -47,42 +47,32 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Start MLflow (local, background) and wait
-        shell: bash
+      # 👉 Use your EC2 MLflow. No server start in CI.
+      - name: Configure & verify MLflow endpoint (EC2)
         run: |
-          set -euxo pipefail
-          . .venv/bin/activate
+          set -euo pipefail
+          MLFLOW_TRACKING_URI="http://54.147.138.39:8081"
+          echo "MLFLOW_TRACKING_URI=$MLFLOW_TRACKING_URI" >> "$GITHUB_ENV"
 
-          # Confirm mlflow is installed
-          python -c "import mlflow; print('MLflow', mlflow.__version__)"
-
-          mkdir -p artifacts
-
-          # Start MLflow bound to localhost only
-          nohup mlflow server \
-            --backend-store-uri sqlite:///mlflow.db \
-            --artifacts-destination file:./artifacts \
-            --host 127.0.0.1 --port 8081 \
-            > mlflow.log 2>&1 &
-
-          # Wait up to ~60s for server
-          for i in {1..60}; do
-            if curl -fsS http://127.0.0.1:8081/ >/dev/null; then
-              echo "MLflow is up"
-              break
+          echo "Waiting for MLflow at $MLFLOW_TRACKING_URI/ ..."
+          for i in {1..45}; do
+            if curl -fsS "$MLFLOW_TRACKING_URI/" >/dev/null; then
+              echo "MLflow reachable"
+              exit 0
             fi
-            sleep 1
+            sleep 2
           done
+          echo "::error::MLflow is not reachable at $MLFLOW_TRACKING_URI"
+          # Try to show a bit more context
+          curl -iS "$MLFLOW_TRACKING_URI/" || true
+          exit 1
 
-          # If not up, dump logs and fail
-          if ! curl -fsS http://127.0.0.1:8081/ >/dev/null; then
-            echo "MLflow failed to start. Recent log:" || true
-            tail -n 200 mlflow.log || true
-            exit 1
-          fi
-
-          # Use local MLflow for the rest of the job
-          echo "MLFLOW_TRACKING_URI=http://127.0.0.1:8081" >> "$GITHUB_ENV"
+      - name: Show versions (sanity)
+        run: |
+          . .venv/bin/activate
+          python -V
+          pip show mlflow || true
+          echo "Using MLFLOW_TRACKING_URI=$MLFLOW_TRACKING_URI"
 
       - name: Train v1 (baseline) and promote to Production
         run: |
@@ -108,8 +98,8 @@ jobs:
         with:
           name: w7d2-mlflow-artifacts
           path: |
-            W7-D1-mlflow-adv/mlflow.log
-            W7-D1-mlflow-adv/mlflow.db
-            W7-D1-mlflow-adv/artifacts/**
             W7-D1-mlflow-adv/logs/**
+            W7-D1-mlflow-adv/metrics/**
+            W7-D1-mlflow-adv/reports/**
+            W7-D1-mlflow-adv/artifacts/**
           if-no-files-found: warn
