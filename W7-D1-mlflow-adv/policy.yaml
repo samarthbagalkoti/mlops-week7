@@ -5,3 +5,5 @@ allowed_regression: 0.01
 # If there's no current Production, allow first promotion
 allow_first_promotion: true
 
+latency_p95_budget_ms: 200
+

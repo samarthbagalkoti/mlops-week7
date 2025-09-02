@@ -39,7 +39,7 @@ def main(candidate_version: int):
     cand_metric = get_metric_from_run(client, cand.run_id, metric_key)
 
     # Current "production" via alias (no stages)
-    prod_alias = stage_to_alias("Production")
+    prod_alias = stage_to_alias("Staging")
     try:
         prod = client.get_model_version_by_alias(model_name, prod_alias)
     except Exception:

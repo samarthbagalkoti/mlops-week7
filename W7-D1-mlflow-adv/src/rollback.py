@@ -106,7 +106,7 @@ def main(reason: str, dry_run: bool, requested_by: str):
 
     # Re-point alias to target (non-deprecated)
     try:
-        client.set_registered_model_alias(name=model_name, alias="production", version=str(target.version))
+        client.set_registered_model_alias(name=model_name, alias="Staging", version=str(target.version))
 
         # Optional bookkeeping tags
         client.set_model_version_tag(name=model_name, version=target.version, key="rollback_to", value=str(target.version))
