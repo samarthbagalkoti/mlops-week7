@@ -28,24 +28,29 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      # Use your existing MLflow on the VM and verify it is reachable.
       - name: Configure & verify MLflow endpoint (EC2)
+        env:
+          MLFLOW_TRACKING_URI: http://54.147.138.39:8081
         run: |
           set -euo pipefail
-          MLFLOW_TRACKING_URI="http://54.147.138.39:8081"
           echo "MLFLOW_TRACKING_URI=$MLFLOW_TRACKING_URI" >> "$GITHUB_ENV"
 
           echo "[CHECK] Reachability (UI root)"
           curl -fsS --max-time 10 "$MLFLOW_TRACKING_URI" >/dev/null
 
-          echo "[CHECK] MLflow REST API (experiments.list)"
-          curl -fsS --max-time 10 -X POST \
-            -H "Content-Type: application/json" \
-            "$MLFLOW_TRACKING_URI/api/2.0/mlflow/experiments/list" \
-            -d '{}' >/dev/null
-          echo "[OK] MLflow is reachable and responding."
+          echo "[CHECK] MLflow Python client"
+          . .venv/bin/activate
+          python - <<'PY'
+import os
+from mlflow.tracking import MlflowClient
+uri = os.environ["MLFLOW_TRACKING_URI"]
+c = MlflowClient(tracking_uri=uri)
+# Will raise if unreachable / wrong URI
+exps = c.search_experiments()
+print(f"[OK] MLflow reachable. Experiments: {len(exps)}")
+PY
 
-      # Bootstrap: ensure at least one Production baseline exists (idempotent).
+      # Bootstrap: ensure at least one Production baseline exists (idempotent)
       - name: Ensure baseline Production exists (idempotent)
         run: |
           . .venv/bin/activate
@@ -70,6 +75,5 @@ jobs:
           path: |
             logs/audit.jsonl
             mlflow.log
-            mlflow.db
-            artifacts/
+            # mlflow.db and artifacts/ are on the remote VM, so they won't exist on the runner
           if-no-files-found: warn
