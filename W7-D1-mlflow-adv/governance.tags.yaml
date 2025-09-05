@@ -1,0 +1,15 @@
+# Required metadata on model versions that reach Staging/Production
+required:
+  - key: owner
+  - key: use.case
+  - key: git.sha
+  - key: data.version
+  - key: data.schema.features   # numeric string (count)
+  - key: risk.tier              # one of: low|medium|high
+  - key: pii                    # one of: none|pseudonymous|personal
+  - key: serve.slo.p95_ms       # numeric string (e.g., "200")
+
+constraints:
+  "risk.tier": ["low", "medium", "high"]
+  "pii": ["none", "pseudonymous", "personal"]
+

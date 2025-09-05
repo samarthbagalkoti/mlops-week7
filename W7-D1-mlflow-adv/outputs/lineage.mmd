@@ -1,0 +1,61 @@
+flowchart LR
+  V1[v1\nstage:None]
+  RUN_1((run))
+  RUN_1 --> V1
+  V2[v2\nstage:Production]
+  RUN_2((run))
+  RUN_2 --> V2
+  V3[v3\nstage:None]
+  RUN_3((run))
+  RUN_3 --> V3
+  V4[v4\nstage:None]
+  RUN_4((run))
+  RUN_4 --> V4
+  V5[v5\nstage:None]
+  RUN_5((run))
+  RUN_5 --> V5
+  V6[v6\nstage:None]
+  RUN_6((run))
+  RUN_6 --> V6
+  V7[v7\nstage:None]
+  RUN_7((run))
+  RUN_7 --> V7
+  V8[v8\nstage:None]
+  RUN_8((run))
+  RUN_8 --> V8
+  V9[v9\nstage:None]
+  RUN_9((run))
+  RUN_9 --> V9
+  V10[v10\nstage:None]
+  RUN_10((run))
+  RUN_10 --> V10
+  V11[v11\nstage:None]
+  RUN_11((run))
+  RUN_11 --> V11
+  V12[v12\nstage:None]
+  RUN_12((run))
+  RUN_12 --> V12
+  V13[v13\nstage:None]
+  RUN_13((run))
+  RUN_13 --> V13
+  V14[v14\nstage:None]
+  RUN_14((run))
+  RUN_14 --> V14
+  V15[v15\nstage:None]
+  RUN_15((run))
+  RUN_15 --> V15
+  V16[v16\nstage:None]
+  RUN_16((run))
+  RUN_16 --> V16
+  V17[v17\nstage:None]
+  RUN_17((run))
+  RUN_17 --> V17
+  V18[v18\nstage:None]
+  RUN_18((run))
+  RUN_18 --> V18
+  A_production{production}
+  A_production --> V2
+  A_staging{staging}
+  A_staging --> V18
+  A_latest-candidate{latest-candidate}
+  A_latest-candidate --> V18

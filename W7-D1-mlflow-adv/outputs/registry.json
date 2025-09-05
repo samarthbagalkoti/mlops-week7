@@ -1,0 +1,358 @@
+{
+  "model": "w7d1_cancer_classifier",
+  "versions": [
+    {
+      "version": 1,
+      "stage": "None",
+      "run_id": "ab93c27b62074c00b3318b8571c31e2f",
+      "metrics": {
+        "auc": 0.9943783068783069,
+        "f1": 0.9793103448275862
+      },
+      "params": {
+        "random_state": "1",
+        "model_type": "logistic_regression",
+        "scikit_learn": "1.5.1"
+      },
+      "tags": {
+        "promoted_by": "samarth",
+        "promote_reason": "routine promotion",
+        "was_production": "true",
+        "rollback_to": "1",
+        "rollback_reason": "revert due to drift",
+        "rollback_from": "1"
+      }
+    },
+    {
+      "version": 2,
+      "stage": "Production",
+      "run_id": "255a2852a2f34a068961ecdf6b38eb7d",
+      "metrics": {
+        "auc": 0.9973544973544973,
+        "f1": 0.9790209790209791
+      },
+      "params": {
+        "random_state": "2",
+        "model_type": "logistic_regression",
+        "scikit_learn": "1.5.1"
+      },
+      "tags": {
+        "promoted_by": "samarth",
+        "promote_reason": "routine promotion",
+        "was_production": "true",
+        "rollback_from": "2",
+        "rollback_to": "2",
+        "rollback_reason": "manual rollback (W7:D4)"
+      }
+    },
+    {
+      "version": 3,
+      "stage": "None",
+      "run_id": "cc9373d9adcd43b5af331e7150ec2248",
+      "metrics": {
+        "auc": 0.9986772486772486,
+        "f1": 0.993103448275862
+      },
+      "params": {
+        "random_state": "1",
+        "model_type": "logistic_regression",
+        "pipeline": "StandardScaler->LogisticRegression",
+        "max_iter": "1000",
+        "solver": "lbfgs",
+        "scikit_learn": "1.5.2"
+      },
+      "tags": {}
+    },
+    {
+      "version": 4,
+      "stage": "None",
+      "run_id": "d28bf92611884b95b80d71469f0de2f2",
+      "metrics": {
+        "auc": 0.9963624338624338,
+        "f1": 0.9863013698630136
+      },
+      "params": {
+        "random_state": "2",
+        "model_type": "logistic_regression",
+        "pipeline": "StandardScaler->LogisticRegression",
+        "max_iter": "1000",
+        "solver": "lbfgs",
+        "scikit_learn": "1.5.2"
+      },
+      "tags": {}
+    },
+    {
+      "version": 5,
+      "stage": "None",
+      "run_id": "8c8497c127994f2f95e9e57029205e5b",
+      "metrics": {
+        "auc": 0.9986772486772486,
+        "f1": 0.993103448275862
+      },
+      "params": {
+        "random_state": "1",
+        "model_type": "logistic_regression",
+        "pipeline": "StandardScaler->LogisticRegression",
+        "max_iter": "1000",
+        "solver": "lbfgs",
+        "scikit_learn": "1.5.2"
+      },
+      "tags": {}
+    },
+    {
+      "version": 6,
+      "stage": "None",
+      "run_id": "2d17538e5c8345e1b374f863ede8b3a9",
+      "metrics": {
+        "auc": 0.9963624338624338,
+        "f1": 0.9863013698630136
+      },
+      "params": {
+        "random_state": "2",
+        "model_type": "logistic_regression",
+        "pipeline": "StandardScaler->LogisticRegression",
+        "max_iter": "1000",
+        "solver": "lbfgs",
+        "scikit_learn": "1.5.2"
+      },
+      "tags": {}
+    },
+    {
+      "version": 7,
+      "stage": "None",
+      "run_id": "91af71a4b79f476fbfb6bd6be6bae871",
+      "metrics": {
+        "auc": 0.9986772486772486,
+        "f1": 0.993103448275862
+      },
+      "params": {
+        "random_state": "1",
+        "model_type": "logistic_regression",
+        "pipeline": "StandardScaler->LogisticRegression",
+        "max_iter": "1000",
+        "solver": "lbfgs",
+        "scikit_learn": "1.5.2"
+      },
+      "tags": {}
+    },
+    {
+      "version": 8,
+      "stage": "None",
+      "run_id": "1376ae62294b4ac69586d72726605915",
+      "metrics": {
+        "auc": 0.9963624338624338,
+        "f1": 0.9863013698630136
+      },
+      "params": {
+        "random_state": "2",
+        "model_type": "logistic_regression",
+        "pipeline": "StandardScaler->LogisticRegression",
+        "max_iter": "1000",
+        "solver": "lbfgs",
+        "scikit_learn": "1.5.2"
+      },
+      "tags": {
+        "promoted_by": "ci",
+        "promote_reason": "smoke+gate passed",
+        "was_production": "true",
+        "rollback_from": "8"
+      }
+    },
+    {
+      "version": 9,
+      "stage": "None",
+      "run_id": "a87d68e07a3942eeaf74f0eef48c1542",
+      "metrics": {
+        "auc": 0.9986772486772486,
+        "f1": 0.993103448275862
+      },
+      "params": {
+        "random_state": "1",
+        "model_type": "logistic_regression",
+        "pipeline": "StandardScaler->LogisticRegression",
+        "max_iter": "1000",
+        "solver": "lbfgs",
+        "scikit_learn": "1.5.2"
+      },
+      "tags": {}
+    },
+    {
+      "version": 10,
+      "stage": "None",
+      "run_id": "1f8f2fe9d4c1457a8f1c04a6e1d295ee",
+      "metrics": {
+        "auc": 0.9963624338624338,
+        "f1": 0.9863013698630136
+      },
+      "params": {
+        "random_state": "2",
+        "model_type": "logistic_regression",
+        "pipeline": "StandardScaler->LogisticRegression",
+        "max_iter": "1000",
+        "solver": "lbfgs",
+        "scikit_learn": "1.5.2"
+      },
+      "tags": {}
+    },
+    {
+      "version": 11,
+      "stage": "None",
+      "run_id": "c6366a2711dd435aa33dade093d3d79b",
+      "metrics": {
+        "auc": 0.9986772486772486,
+        "f1": 0.993103448275862
+      },
+      "params": {
+        "random_state": "1",
+        "model_type": "logistic_regression",
+        "pipeline": "StandardScaler->LogisticRegression",
+        "max_iter": "1000",
+        "solver": "lbfgs",
+        "scikit_learn": "1.5.2"
+      },
+      "tags": {}
+    },
+    {
+      "version": 12,
+      "stage": "None",
+      "run_id": "8d02c849d0284f39a5a2c43da85b561b",
+      "metrics": {
+        "auc": 0.9986772486772486,
+        "f1": 0.993103448275862
+      },
+      "params": {
+        "random_state": "1",
+        "model_type": "logistic_regression",
+        "pipeline": "StandardScaler->LogisticRegression",
+        "max_iter": "1000",
+        "solver": "lbfgs",
+        "scikit_learn": "1.5.2"
+      },
+      "tags": {}
+    },
+    {
+      "version": 13,
+      "stage": "None",
+      "run_id": "9d0e79d98b2f4392b294c9b4b3d63021",
+      "metrics": {
+        "auc": 0.9963624338624338,
+        "f1": 0.9863013698630136
+      },
+      "params": {
+        "random_state": "2",
+        "model_type": "logistic_regression",
+        "pipeline": "StandardScaler->LogisticRegression",
+        "max_iter": "1000",
+        "solver": "lbfgs",
+        "scikit_learn": "1.5.2"
+      },
+      "tags": {
+        "promoted_by": "ci",
+        "promote_reason": "smoke+gate passed",
+        "was_production": "true"
+      }
+    },
+    {
+      "version": 14,
+      "stage": "None",
+      "run_id": "3cc9ae1cf667427bb8f10ace452088bc",
+      "metrics": {
+        "auc": 0.9963624338624338,
+        "f1": 0.9863013698630136
+      },
+      "params": {
+        "random_state": "2",
+        "model_type": "logistic_regression",
+        "pipeline": "StandardScaler->LogisticRegression",
+        "max_iter": "1000",
+        "solver": "lbfgs",
+        "scikit_learn": "1.5.2"
+      },
+      "tags": {}
+    },
+    {
+      "version": 15,
+      "stage": "None",
+      "run_id": "ce52e9031a0c492e9467ed9febc9d3bc",
+      "metrics": {
+        "auc": 0.9986772486772486,
+        "f1": 0.993103448275862
+      },
+      "params": {
+        "random_state": "1",
+        "model_type": "logistic_regression",
+        "pipeline": "StandardScaler->LogisticRegression",
+        "max_iter": "1000",
+        "solver": "lbfgs",
+        "scikit_learn": "1.5.2"
+      },
+      "tags": {}
+    },
+    {
+      "version": 16,
+      "stage": "None",
+      "run_id": "108633e7b356455eaa7e21832327555e",
+      "metrics": {
+        "auc": 0.9963624338624338,
+        "f1": 0.9863013698630136
+      },
+      "params": {
+        "random_state": "2",
+        "model_type": "logistic_regression",
+        "pipeline": "StandardScaler->LogisticRegression",
+        "max_iter": "1000",
+        "solver": "lbfgs",
+        "scikit_learn": "1.5.2"
+      },
+      "tags": {}
+    },
+    {
+      "version": 17,
+      "stage": "None",
+      "run_id": "e465ff4ab63c4a5c9d56873777e21dea",
+      "metrics": {
+        "auc": 0.9986772486772486,
+        "f1": 0.993103448275862
+      },
+      "params": {
+        "random_state": "1",
+        "model_type": "logistic_regression",
+        "pipeline": "StandardScaler->LogisticRegression",
+        "max_iter": "1000",
+        "solver": "lbfgs",
+        "scikit_learn": "1.5.2"
+      },
+      "tags": {}
+    },
+    {
+      "version": 18,
+      "stage": "None",
+      "run_id": "ffb47a354d384d2f9a0dbe839d8365ed",
+      "metrics": {
+        "auc": 0.9963624338624338,
+        "f1": 0.9863013698630136
+      },
+      "params": {
+        "random_state": "2",
+        "model_type": "logistic_regression",
+        "pipeline": "StandardScaler->LogisticRegression",
+        "max_iter": "1000",
+        "solver": "lbfgs",
+        "scikit_learn": "1.5.2"
+      },
+      "tags": {
+        "promoted_by": "ci",
+        "promote_reason": "smoke+gate passed",
+        "was_production": "true",
+        "owner": "samarth",
+        "use.case": "demo",
+        "git.sha": "c0bd391",
+        "serve.slo.p95_ms": "200",
+        "risk.tier": "low",
+        "pii": "none",
+        "data.version": "breast_cancer_v1",
+        "stage.intent": "Staging"
+      }
+    }
+  ]
+}

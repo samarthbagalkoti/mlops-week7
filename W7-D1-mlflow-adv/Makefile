@@ -1,5 +1,6 @@
 SHELL := /bin/bash
-
+.ONESHELL:
+.SHELLFLAGS := -eu -o pipefail -c
 PY := python
 ENV := . ./.venv/bin/activate
 
@@ -80,4 +81,47 @@ rollback_preview:
 
 rollback_apply:
 	@. .venv/bin/activate; python src/rollback.py --reason "manual rollback (W7:D4)" --dry-run false
+
+
+# --- D5 governance & discoverability ---
+
+SET ?=
+
+
+tag_latest:
+	. .venv/bin/activate; \
+	VER=$$(python src/get_latest.py); \
+	python src/tag_version.py --version $$VER --set "$(SET)"
+
+#gov_check_staging:
+#	. .venv/bin/activate && python src/check_required_tags.py --stage Staging
+
+#gov_check_prod:
+#	. .venv/bin/activate && python src/check_required_tags.py --stage Production
+
+alias_sync:
+	. .venv/bin/activate && python src/alias_sync.py
+
+export_lineage:
+	. .venv/bin/activate && python src/export_lineage.py
+
+gov_check_staging:
+	source .venv/bin/activate
+	python - <<-'PY'
+	import os
+	from mlflow import MlflowClient
+	name = os.environ.get("MODEL_NAME","w7d1_cancer_classifier")
+	c = MlflowClient()
+	staging = max(
+	    (mv for mv in c.search_model_versions(f"name='{name}'") if mv.current_stage=="Staging"),
+	    key=lambda mv:int(mv.version)
+	)
+	c.set_model_version_tag(
+	    name=name, version=staging.version,
+	    key="data.schema.features",
+	    value=os.environ.get("DATA_FEATURES","30")
+	)
+	print(f"Tagged Staging v{staging.version} data.schema.features=",
+	      os.environ.get("DATA_FEATURES","30"))
+	PY
 
