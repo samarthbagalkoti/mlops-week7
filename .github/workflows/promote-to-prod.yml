@@ -1,0 +1,75 @@
+name: W7 Promote to Production (Stage→Smoke→Gate)
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [ main ]
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    defaults:
+      run:
+        working-directory: W7-D1-mlflow-adv
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Use your existing MLflow on the VM and verify it is reachable.
+      - name: Configure & verify MLflow endpoint (EC2)
+        run: |
+          set -euo pipefail
+          MLFLOW_TRACKING_URI="http://54.147.138.39:8081"
+          echo "MLFLOW_TRACKING_URI=$MLFLOW_TRACKING_URI" >> "$GITHUB_ENV"
+
+          echo "[CHECK] Reachability (UI root)"
+          curl -fsS --max-time 10 "$MLFLOW_TRACKING_URI" >/dev/null
+
+          echo "[CHECK] MLflow REST API (experiments.list)"
+          curl -fsS --max-time 10 -X POST \
+            -H "Content-Type: application/json" \
+            "$MLFLOW_TRACKING_URI/api/2.0/mlflow/experiments/list" \
+            -d '{}' >/dev/null
+          echo "[OK] MLflow is reachable and responding."
+
+      # Bootstrap: ensure at least one Production baseline exists (idempotent).
+      - name: Ensure baseline Production exists (idempotent)
+        run: |
+          . .venv/bin/activate
+          make train_v1 || true
+          make promote VERSION=1 STAGE=Production DRY=false || true
+
+      - name: Train new candidate (latest)
+        run: |
+          . .venv/bin/activate
+          make train_v2 || true
+
+      - name: Stage → Smoke → Gate → Prod
+        run: |
+          . .venv/bin/activate
+          make promote_latest_safe
+
+      - name: Upload registry & audit artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: w7d4-prod-release
+          path: |
+            logs/audit.jsonl
+            mlflow.log
+            mlflow.db
+            artifacts/
+          if-no-files-found: warn
