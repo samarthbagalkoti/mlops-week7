@@ -44,7 +44,7 @@ def last_prev_from_audit(model_name: str):
 
 def main(reason: str, dry_run: bool, requested_by: str):
     # URIs (default to local if not set)
-    tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://127.0.0.1:5001")
+    tracking_uri = os.getenv("MLFLOW_TRACKING_URI", "http://54.147.138.39:8081")
     registry_uri = os.getenv("MLFLOW_REGISTRY_URI", tracking_uri)
     os.environ.setdefault("MLFLOW_TRACKING_URI", tracking_uri)
     os.environ.setdefault("MLFLOW_REGISTRY_URI", registry_uri)
