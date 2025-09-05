@@ -1,9 +1,12 @@
 name: W7 Promote to Production (Stage→Smoke→Gate)
 
 on:
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - "W7-D1-mlflow-adv/**"
+      - ".github/workflows/promote-to-prod.yml"
   workflow_dispatch: {}
-  push:
-    branches: [ main ]
 
 jobs:
   release:
