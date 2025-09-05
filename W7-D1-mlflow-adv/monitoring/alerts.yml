@@ -1,0 +1,11 @@
+groups:
+- name: example
+  rules:
+  - alert: InstanceDown
+    expr: up == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Instance {{ $labels.instance }} is down"
+      description: "Prometheus has not been able to scrape {{ $labels.job }} on {{ $labels.instance }} for over 1 minute."

@@ -64,7 +64,7 @@ async def run(base_url, requests, concurrency, p95_budget_ms):
 
 if __name__ == "__main__":
   ap = argparse.ArgumentParser()
-  ap.add_argument("--base-url", default="http://127.0.0.1:8080")
+  ap.add_argument("--base-url", default="http://54.147.138.39:8086")
   ap.add_argument("--requests", type=int, default=50)
   ap.add_argument("--concurrency", type=int, default=5)
   ap.add_argument("--p95-budget-ms", type=float, default=200.0)

@@ -39,10 +39,10 @@ dry_rollback:
 	$(ENV) && $(PY) src/rollback.py --reason "dry-run check" --dry-run true
 
 serve_staging:
-	. .venv/bin/activate && MODEL_STAGE=Staging uvicorn src.serve_app:app --host 0.0.0.0 --port 8082
+	. .venv/bin/activate && MODEL_STAGE=Staging uvicorn src.serve_app:app --host 0.0.0.0 --port 8085
 
 serve_production:
-	. .venv/bin/activate && MODEL_STAGE=Production uvicorn src.serve_app:app --host 0.0.0.0 --port 8082
+	. .venv/bin/activate && MODEL_STAGE=Production uvicorn src.serve_app:app --host 0.0.0.0 --port 8085
 
 smoke:
 	. .venv/bin/activate && python src/smoke_test.py --base-url http://54.147.138.39:8082 --requests 60 --concurrency 8 --p95-budget-ms 200
@@ -124,4 +124,35 @@ gov_check_staging:
 	print(f"Tagged Staging v{staging.version} data.schema.features=",
 	      os.environ.get("DATA_FEATURES","30"))
 	PY
+
+
+# --- D6 monitoring ---
+serve_prod:
+	. .venv/bin/activate && MODEL_STAGE=Production uvicorn src.serve_app:app --host 0.0.0.0 --port 8086
+
+monitor_up:
+	cd monitoring && docker compose up -d
+
+monitor_down:
+	cd monitoring && docker compose down
+
+smoke_prod:
+	. .venv/bin/activate && python src/smoke_test.py --base-url http://54.147.138.39:8085 --requests 120 --concurrency 12 --p95-budget-ms 200
+
+build_reference:
+	. .venv/bin/activate && python src/build_reference.py
+
+drift_check:
+	. .venv/bin/activate && python src/drift_check.py
+
+# Optional: send Slack webhook on drift (set SLACK_WEBHOOK_URL env)
+drift_alert:
+	@. .venv/bin/activate; \
+	python src/drift_check.py || ( \
+	  if [ -n "$$SLACK_WEBHOOK_URL" ]; then \
+	    echo "[ALERT] Sending Slack webhook..."; \
+	    curl -s -X POST -H 'Content-type: application/json' --data "{\"text\":\"W7 drift alert: see outputs/drift_report.json\"}" $$SLACK_WEBHOOK_URL >/dev/null || true; \
+	  fi; \
+	  exit 3 \
+	)
 
