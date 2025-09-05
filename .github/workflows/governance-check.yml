@@ -1,0 +1,74 @@
+name: W7 Governance Check (Tags/Aliases)
+
+on:
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - "governance.tags.yaml"
+      - "src/**"
+      - "params.yaml"
+  workflow_dispatch: {}
+
+defaults:
+  run:
+    working-directory: W7-D1-mlflow-adv
+
+jobs:
+  governance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Use secret if provided; a later step sets a default if empty
+      MLFLOW_TRACKING_URI: ${{ secrets.MLFLOW_TRACKING_URI }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Set MLflow URI fallback
+        run: |
+          if [ -z "${MLFLOW_TRACKING_URI}" ]; then
+            echo "MLFLOW_TRACKING_URI=http://54.147.138.39:8081" >> "$GITHUB_ENV"
+          fi
+
+      - name: Sync aliases (non-fatal)
+        run: |
+          . .venv/bin/activate
+          python src/alias_sync.py || true
+
+      - name: Governance: Staging
+        run: |
+          . .venv/bin/activate
+          python src/check_required_tags.py --stage Staging
+
+      - name: Governance: Production (best effort)
+        run: |
+          . .venv/bin/activate
+          python src/check_required_tags.py --stage Production || true
+
+      - name: Export lineage (artifact)
+        if: always()
+        run: |
+          . .venv/bin/activate
+          python src/export_lineage.py
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: w7d5-governance
+          path: |
+            outputs/lineage.mmd
+            outputs/registry.json
+            logs/audit.jsonl
+            mlflow.db
+            artifacts/
+          if-no-files-found: warn
