@@ -1,17 +1,18 @@
-name: W7 Promote to Production (Stage→Smoke→Gate)
+name: W7 Promote to Production (Stage->Smoke->Gate)
 
 on:
-  pull_request:
-    branches: [ main, master ]
-    paths:
-      - "W7-D1-mlflow-adv/**"
-      - ".github/workflows/promote-to-prod.yml"
   workflow_dispatch: {}
+  push:
+    branches: [ main ]
 
 jobs:
   release:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+
+    # Expose your remote MLflow to all steps
+    env:
+      MLFLOW_TRACKING_URI: http://54.147.138.39:8081
 
     defaults:
       run:
@@ -31,9 +32,7 @@ jobs:
           pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Configure & verify MLflow endpoint (EC2)
-        env:
-          MLFLOW_TRACKING_URI: http://54.147.138.39:8081
+      - name: Verify MLflow reachability
         run: |
           set -euo pipefail
           echo "MLFLOW_TRACKING_URI=$MLFLOW_TRACKING_URI" >> "$GITHUB_ENV"
@@ -43,17 +42,9 @@ jobs:
 
           echo "[CHECK] MLflow Python client"
           . .venv/bin/activate
-          python - <<'PY'
-import os
-from mlflow.tracking import MlflowClient
-uri = os.environ["MLFLOW_TRACKING_URI"]
-c = MlflowClient(tracking_uri=uri)
-# Will raise if unreachable / wrong URI
-exps = c.search_experiments()
-print(f"[OK] MLflow reachable. Experiments: {len(exps)}")
-PY
+          python -c "import os; from mlflow.tracking import MlflowClient; c=MlflowClient(tracking_uri=os.environ['MLFLOW_TRACKING_URI']); print('[OK] MLflow reachable. Experiments:', len(c.search_experiments()))"
 
-      # Bootstrap: ensure at least one Production baseline exists (idempotent)
+      # Idempotent bootstrap: ensure at least one Prod version exists
       - name: Ensure baseline Production exists (idempotent)
         run: |
           . .venv/bin/activate
@@ -65,12 +56,12 @@ PY
           . .venv/bin/activate
           make train_v2 || true
 
-      - name: Stage → Smoke → Gate → Prod
+      - name: Stage -> Smoke -> Gate -> Prod
         run: |
           . .venv/bin/activate
           make promote_latest_safe
 
-      - name: Upload registry & audit artifacts
+      - name: Upload logs/artifacts (best-effort)
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -78,5 +69,4 @@ PY
           path: |
             logs/audit.jsonl
             mlflow.log
-            # mlflow.db and artifacts/ are on the remote VM, so they won't exist on the runner
           if-no-files-found: warn
