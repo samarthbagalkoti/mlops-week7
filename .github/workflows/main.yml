@@ -1,0 +1,72 @@
+name: W7 One-Click Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Preview only?"
+        required: true
+        default: "true"
+        type: choice
+        options: ["true","false"]
+      reason:
+        description: "Why rollback?"
+        required: true
+        default: "incident/drift"
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: W7-D1-mlflow-adv   # <- adjust if your folder differs
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install deps
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Prefer secret; otherwise use your known endpoint
+      - name: Configure MLflow endpoint
+        run: |
+          if [ -n "${{ secrets.MLFLOW_TRACKING_URI }}" ]; then
+            echo "MLFLOW_TRACKING_URI=${{ secrets.MLFLOW_TRACKING_URI }}" >> $GITHUB_ENV
+          else
+            echo "MLFLOW_TRACKING_URI=http://54.147.138.39:8081" >> $GITHUB_ENV
+          fi
+          echo "[INFO] Using MLFLOW_TRACKING_URI=$MLFLOW_TRACKING_URI"
+
+      - name: Verify MLflow is reachable
+        run: |
+          set -euo pipefail
+          curl -fsS --max-time 10 "$MLFLOW_TRACKING_URI" >/dev/null
+          . .venv/bin/activate
+          python -c "import os; from mlflow.tracking import MlflowClient; MlflowClient(tracking_uri=os.environ['MLFLOW_TRACKING_URI']).search_experiments(); print('[OK] MLflow reachable')"
+
+      - name: Dry-run preview OR apply
+        run: |
+          . .venv/bin/activate
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            python src/rollback.py --reason "${{ inputs.reason }}" --dry-run true
+          else
+            python src/rollback.py --reason "${{ inputs.reason }}" --dry-run false
+          fi
+
+      - name: Upload audit log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: w7d4-rollback-audit
+          path: W7-D1-mlflow-adv/logs/audit.jsonl
+          if-no-files-found: warn
